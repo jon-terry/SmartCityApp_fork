@@ -55,22 +55,45 @@ public class SmartCityApp {
         System.out.print("Enter your choice: ");
     }
 
-    // Register new user directly to MySQL database
+    // Validates username: 4-20 characters, alphanumeric only
+    private static boolean isValidUsername(String username) {
+        if (username == null || username.isEmpty()) return false;
+        String regex = "^[a-zA-Z0-9]{4,20}$";
+        return username.matches(regex);
+    }
+
+    // Validates password: Minimum 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+    private static boolean isValidPassword(String password) {
+        if (password == null || password.isEmpty()) return false;
+        String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        return password.matches(regex);
+    }
+
+    // Register new user directly to MySQL database with validation
     private static void register() {
         System.out.println("\n--- Registration ---");
 
-        // Get username from user input
-        System.out.print("Enter username: ");
+        // Get and validate username
+        System.out.print("Enter username (4-20 alphanumeric characters): ");
         String username = scanner.nextLine();
 
-        // Validate username is not empty
-        if (username.isEmpty()) {
-            System.out.println("Error: Username cannot be empty.");
+        if (!isValidUsername(username)) {
+            System.out.println("❌ Error: Invalid username. It must be 4-20 characters long and contain only letters and numbers.");
             return;
         }
 
-        // SQL query to check if username already exists
+        // Get and validate password BEFORE hitting the database
+        System.out.print("Enter password (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char): ");
+        String password = scanner.nextLine();
+
+        if (!isValidPassword(password)) {
+            System.out.println("❌ Error: Password is too weak. Please meet all requirements.");
+            return;
+        }
+
+        // SQL queries
         String checkQuery = "SELECT id FROM users WHERE username = ?";
+        String insertQuery = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
 
         try {
             // Get database connection
@@ -87,7 +110,7 @@ public class SmartCityApp {
             ResultSet resultSet = checkPstmt.executeQuery();
 
             if (resultSet.next()) {
-                System.out.println("Error: Username already exists. Please choose a different username.");
+                System.out.println("❌ Error: Username already exists. Please choose a different username.");
                 resultSet.close();
                 checkPstmt.close();
                 connection.close();
@@ -96,20 +119,6 @@ public class SmartCityApp {
 
             resultSet.close();
             checkPstmt.close();
-
-            // Get password from user input
-            System.out.print("Enter password: ");
-            String password = scanner.nextLine();
-
-            // Validate password is not empty
-            if (password.isEmpty()) {
-                System.out.println("Error: Password cannot be empty.");
-                connection.close();
-                return;
-            }
-
-            // SQL query to insert new user with default "USER" role
-            String insertQuery = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
 
             // Create prepared statement for insert
             PreparedStatement insertPstmt = connection.prepareStatement(insertQuery);
@@ -121,9 +130,9 @@ public class SmartCityApp {
             int rowsAffected = insertPstmt.executeUpdate();
 
             if (rowsAffected > 0) {
-                System.out.println("Success! User '" + username + "' registered successfully.");
+                System.out.println("✅ Success! User '" + username + "' registered successfully.");
             } else {
-                System.out.println("Error: Failed to register user. Please try again.");
+                System.out.println("❌ Error: Failed to register user. Please try again.");
             }
 
             // Close resources
@@ -173,7 +182,7 @@ public class SmartCityApp {
                 // Get user role from database
                 String role = resultSet.getString("role");
 
-                System.out.println("Success! Welcome back, " + username + "!");
+                System.out.println("✅ Success! Welcome back, " + username + "!");
 
                 // Show appropriate menu based on user role
                 if (role.equals("ADMIN")) {
@@ -182,7 +191,7 @@ public class SmartCityApp {
                     showUserMenu(username);
                 }
             } else {
-                System.out.println("Error: Username or password incorrect. Please try again.");
+                System.out.println("❌ Error: Username or password incorrect. Please try again.");
             }
 
             // Close resources
