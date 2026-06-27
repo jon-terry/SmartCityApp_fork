@@ -1,6 +1,5 @@
 package com.smartcity.main;
 
-import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
