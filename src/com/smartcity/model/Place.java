@@ -54,4 +54,14 @@ public class Place {
     public void setDescription(String description) {
         this.description = description;
     }
+    @Override
+public String toString() {
+    return "Place{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", category='" + category + '\'' +
+            ", location='" + location + '\'' +
+            ", description='" + description + '\'' +
+            '}';
+}
 }
