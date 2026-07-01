@@ -54,6 +54,15 @@ public class SmartCityApp {
     // Scanner object shared across methods
     private static Scanner scanner = new Scanner(System.in);
 
+
+    // SQL Query Constants (Login/Register)
+    private static final String CHECK_USERNAME_EXISTS_QUERY = "SELECT id FROM users WHERE username = ?";
+
+    private static final String INSERT_USER_QUERY = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+
+    private static final String LOGIN_QUERY = "SELECT role FROM users WHERE username = ? AND password = ?";
+
+    
     public static void main(String[] args) {
         System.out.println("Smart City Guide Started Successfully");
 
@@ -138,7 +147,6 @@ public class SmartCityApp {
             password = scanner.nextLine();
         }
 
-
         try {
             // Get database connection
             Connection connection = DBConnection.getConnection();
@@ -149,7 +157,7 @@ public class SmartCityApp {
             }
 
             // Check if username already exists
-            PreparedStatement checkPstmt = connection.prepareStatement(CHECK_QUERY);
+            PreparedStatement checkPstmt = connection.prepareStatement(CHECK_USERNAME_EXISTS_QUERY);
             checkPstmt.setString(1, username);
             ResultSet resultSet = checkPstmt.executeQuery();
 
@@ -165,7 +173,7 @@ public class SmartCityApp {
             checkPstmt.close();
 
             // Create prepared statement for insert
-            PreparedStatement insertPstmt = connection.prepareStatement(INSERT_QUERY);
+            PreparedStatement insertPstmt = connection.prepareStatement(INSERT_USER_QUERY);
             insertPstmt.setString(1, username);
             insertPstmt.setString(2, password);
             insertPstmt.setString(3, "USER"); // Default role for new users
@@ -201,7 +209,6 @@ public class SmartCityApp {
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
 
-
         try {
             // Get database connection
             Connection connection = DBConnection.getConnection();
@@ -212,7 +219,7 @@ public class SmartCityApp {
             }
 
             // Create prepared statement with parameter binding
-            PreparedStatement pstmt = connection.prepareStatement(SELECT_USER_PASSWORD);
+            PreparedStatement pstmt = connection.prepareStatement(LOGIN_QUERY);
             pstmt.setString(1, username);
             pstmt.setString(2, password);
 
